@@ -1,7 +1,7 @@
 {
   "name": "oretoac",
   "version": "1.0.0",
-  "main": "expo/AppEntry.js",
+  "main": "expo-router/entry",
   "scripts": {
     "start": "expo start",
     "android": "expo start --android",
@@ -9,10 +9,19 @@
     "web": "expo start --web"
   },
   "dependencies": {
+    "@react-native-async-storage/async-storage": "^2.0.0",
+    "@supabase/supabase-js": "^2.46.1",
+    "@types/react": "~18.2.79",
     "expo": "~51.0.28",
+    "expo-image-picker": "~15.0.7",
+    "expo-router": "~3.5.23",
     "expo-status-bar": "~1.12.1",
+    "moment": "^2.30.1",
     "react": "18.2.0",
-    "react-native": "0.74.5"
+    "react-native": "0.74.5",
+    "react-native-calendar-picker": "^8.0.5",
+    "react-native-date-picker": "^5.0.7",
+    "typescript": "~5.3.3"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"
