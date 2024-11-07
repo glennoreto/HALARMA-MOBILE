@@ -2,19 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Image, Alert } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Feather';
+import { supabase } from './lib/supabase';
 import styles from '../assets/styles/EmailVerificationStyles';
 
 const EmailVerification = () => {
   const navigation = useNavigation();
   const route = useRoute();
+  const { email } = route.params;
 
-  const { email, otp: initialOtp } = route.params;
   const [enteredOtp, setEnteredOtp] = useState('');
-  const [otp, setOtp] = useState(initialOtp);
-  const [resendTimer, setResendTimer] = useState(30);  // Initial countdown time
-  const [isResendDisabled, setIsResendDisabled] = useState(true);  // Resend button disabled initially
+  const [resendTimer, setResendTimer] = useState(30);
+  const [isResendDisabled, setIsResendDisabled] = useState(true);
 
-  // Countdown timer for the resend button
   useEffect(() => {
     let timer;
     if (resendTimer > 0) {
@@ -25,26 +24,40 @@ const EmailVerification = () => {
     return () => clearTimeout(timer);
   }, [resendTimer]);
 
-  // Verify OTP function
-  const handleVerifyOtp = () => {
-    if (enteredOtp === otp) {
-      Alert.alert('Success', 'OTP verified successfully!');
-      navigation.navigate('Accounts');  // Navigate to next screen after verification
-    } else {
+  const handleVerifyOtp = async () => {
+    try {
+      const { data, error } = await supabase.auth.verifyOtp({
+        email,
+        token: enteredOtp,
+        type: 'signup',
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      Alert.alert('Success', 'Your email has been verified successfully!');
+
+      navigation.navigate('Accounts'); // Navigate to the main screen
+    } catch (err) {
+      console.error('OTP verification failed:', err);
       Alert.alert('Error', 'Invalid OTP. Please try again.');
     }
   };
 
-  // Resend OTP function with countdown timer reset
   const handleResendOtp = async () => {
     if (isResendDisabled) return;
 
-    const newOtp = Math.floor(100000 + Math.random() * 900000).toString();
-    setOtp(newOtp);                // Set the new OTP
-    setResendTimer(30);            // Reset timer
-    setIsResendDisabled(true);      // Disable resend button
+    const { error } = await supabase.auth.signInWithOtp({ email });
+    if (error) {
+      console.error('Resend OTP Error:', error);
+      Alert.alert('Error', 'Failed to resend OTP. Please try again later.');
+      return;
+    }
 
-    console.log('New OTP:', newOtp);  // Log new OTP for testing/debugging
+    setResendTimer(30);
+    setIsResendDisabled(true);
+
     Alert.alert('OTP Sent', 'A new OTP has been sent to your email.');
   };
 
@@ -66,7 +79,7 @@ const EmailVerification = () => {
       <View style={styles.formContainer}>
         <TextInput
           style={styles.input}
-          placeholder="Enter code:"
+          placeholder="Enter code"
           keyboardType="numeric"
           value={enteredOtp}
           onChangeText={setEnteredOtp}

@@ -1,17 +1,15 @@
-// app/Announcements.js
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, Image, TouchableOpacity } from 'react-native';
-import { useRouter } from 'expo-router'; // Import useRouter for navigation
-import Icon from 'react-native-vector-icons/FontAwesome5'; // Import FontAwesome5 icons
-import styles from '../assets/styles/AnnouncementsStyles'; // Import styles
-import { supabase } from './lib/supabaseClient'; // Import the Supabase client
+import { View, Text, ScrollView, Image, TouchableOpacity, Linking } from 'react-native';
+import { useRouter } from 'expo-router';
+import Icon from 'react-native-vector-icons/FontAwesome5';
+import styles from '../assets/styles/AnnouncementsStyles';
+import { supabase } from './lib/supabaseClient';
 
 const Announcements = () => {
-  const router = useRouter(); // Initialize the router
-  const [announcements, setAnnouncements] = useState([]); // State to hold announcements
-  const [loading, setLoading] = useState(true); // Loading state
+  const router = useRouter();
+  const [announcements, setAnnouncements] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Fetch data from Supabase on component mount
   useEffect(() => {
     const fetchAnnouncements = async () => {
       try {
@@ -19,7 +17,7 @@ const Announcements = () => {
         if (error) {
           console.error('Error fetching announcements:', error);
         } else {
-          console.log('Fetched data:', data); // Log data to verify it's being fetched
+          console.log('Fetched Announcement data:', data);
           setAnnouncements(data);
         }
       } catch (error) {
@@ -29,20 +27,7 @@ const Announcements = () => {
       }
     };
 
-    // Commenting out the fetch to use hardcoded data for testing
-    // fetchAnnouncements();
-
-    // Hardcoded data for testing
-    setAnnouncements([
-      {
-        id: 1,
-        created_at: '2024-11-05T07:02:14.000Z',
-        title: 'Sample Announcement',
-        description: 'Testing testing',
-        image: 'https://www.washingtonpost.com/resizer/6R9BjZqhtgmAFn5vKP5M6On_B2o=/1484x0/arc-anglerfish-washpost-prod-washpost.s3.amazonaws.com/public/ITGJUM2PPNAB5AGCYPOBEDHZNQ.png', // Replace with a valid image URL for testing
-      }
-    ]);
-    setLoading(false);
+    fetchAnnouncements();
   }, []);
 
   return (
@@ -61,21 +46,26 @@ const Announcements = () => {
         ) : (
           announcements.length > 0 ? (
             announcements.map((announcement) => (
-              <View key={announcement.id} style={styles.announcementItem}>
+              <View key={announcement.id} style={styles.card}>
                 <Text style={styles.announcementOffice}>MSEUF Health and Safety Office</Text>
                 <Text style={styles.announcementTime}>
                   {announcement.created_at ? new Date(announcement.created_at).toLocaleString() : 'Unknown time'}
                 </Text>
+                <Text style={styles.announcementTitle}>{announcement.title}</Text>
                 <Text style={styles.announcementText}>{announcement.description}</Text>
                 {announcement.image && (
                   <Image source={{ uri: announcement.image }} style={styles.announcementImage} />
                 )}
-                <Text style={styles.announcementLink}>N/A</Text>
+                {announcement.forms && (
+                  <TouchableOpacity onPress={() => Linking.openURL(announcement.forms)} style={styles.linkContainer}>
+                    <Text style={styles.announcementLink}>Click here for more information</Text>
+                  </TouchableOpacity>
+                )}
                 <View style={styles.separator} />
               </View>
             ))
           ) : (
-            <Text>No announcements available</Text> // Fallback if no data
+            <Text>No announcements available</Text>
           )
         )}
       </ScrollView>

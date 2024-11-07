@@ -1,10 +1,6 @@
-// lib/supabaseClient.js
 import { createClient } from '@supabase/supabase-js';
-import Constants from 'expo-constants';
 
-// Get the Supabase URL and Anon Key from Expo constants
-const supabaseUrl = Constants.expoConfig.extra.supabaseUrl;
-const supabaseAnonKey = Constants.expoConfig.extra.supabaseAnonKey;
+const supabaseUrl = 'https://bmtrvbxbqdmzfhyotepu.supabase.co';
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJtdHJ2YnhicWRtemZoeW90ZXB1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjkyMzU3MDEsImV4cCI6MjA0NDgxMTcwMX0.87VD2EKn3e57F3kd7_dqQiglGIlcqSlfxfoe0UR_Ulo';
 
-// Create and export the Supabase client
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);

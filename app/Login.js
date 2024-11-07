@@ -1,81 +1,68 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Image, Alert } from 'react-native';
-import { useRouter } from 'expo-router'; // Use useRouter for navigation
-import { supabase } from './lib/supabase'; // Supabase client
-import styles from '../assets/styles/LoginStyles'; // Import your styles
-import Icon from 'react-native-vector-icons/Feather'; // For the back arrow icon
-
-// Function to simulate sending OTP (replace with real service in production)
-const sendEmailOTP = async (email, otp) => {
-  console.log(`Sending OTP ${otp} to ${email}`);
-  // Simulate sending OTP (replace with actual API call)
-  return true; 
-};
+import { useRouter } from 'expo-router';
+import { supabase } from './lib/supabase';
+import styles from '../assets/styles/LoginStyles';
+import Icon from 'react-native-vector-icons/Feather';
 
 const Login = () => {
-  const router = useRouter(); // Initialize the router
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Function to generate and send OTP
-  const generateAndSendOTP = async (email) => {
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    console.log('Generated OTP:', otp); // For debugging
-    await sendEmailOTP(email, otp); // Simulate sending the OTP via email
-    return otp;
-  };
-
-  const handleLoginPress = async () => {
-    if (loading) return; // Prevent multiple submissions
-    setLoading(true);
-
+  // Function to send OTP via Supabase
+  const handleSendOTP = async () => {
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      setLoading(true);
+
+      // Check if the email is registered by attempting to sign in with email and password
+      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
-      if (error) {
-        Alert.alert('Login Error', error.message);
-      } else {
-        // Generate OTP after successful login
-        const otp = await generateAndSendOTP(email);
-        Alert.alert('Login Successful', 'An OTP has been sent to your email.');
-
-        // Navigate to the OTP verification screen and pass OTP and email
-        router.push({ pathname: '/TwoFactorAuth', params: { email, otp } });
+      if (signInError) {
+        Alert.alert('Error', 'User not registered or incorrect password.');
+        return;
       }
+
+      // If user exists, send OTP to the email
+      const { error: otpError } = await supabase.auth.signInWithOtp({ email });
+      if (otpError) throw otpError;
+
+      Alert.alert('OTP Sent', 'Please check your email for the verification code.');
+      router.push({ pathname: '/TwoFactorAuth', params: { email } });
     } catch (err) {
-      console.error('Error during login:', err);
-      Alert.alert('Error', 'An unexpected error occurred. Please try again later.');
+      console.error('Error sending OTP:', err);
+      Alert.alert('Error', 'Failed to send OTP. Please check your email and try again.');
     } finally {
       setLoading(false);
     }
   };
 
+  const handleLoginPress = async () => {
+    if (loading) return;
+    await handleSendOTP();
+  };
+
   const handleResetPasswordPress = () => {
-    // Navigate to the NewPasswordReset screen
     router.push('/NewPasswordReset');
   };
 
   return (
     <View style={styles.container}>
-      {/* Back Button */}
       <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
         <Icon name="arrow-left" size={24} color="#000" />
       </TouchableOpacity>
 
-      {/* Logo and Title */}
       <View style={styles.logoContainer}>
         <Image source={require('../assets/bell_halarmaS23.png')} style={styles.logo} />
       </View>
 
-      {/* Title and Subtitle */}
       <Text style={styles.title}>LOGIN</Text>
       <Text style={styles.subtitle}>Simplify, Inform, Empower: Your Information Solution.</Text>
 
-      {/* Login Form */}
       <View style={styles.formContainer}>
         <TextInput
           style={styles.input}
@@ -92,14 +79,10 @@ const Login = () => {
           secureTextEntry
         />
 
-        {/* Login Button with OTP logic */}
         <TouchableOpacity style={styles.loginButton} onPress={handleLoginPress} disabled={loading}>
-          <Text style={styles.loginButtonText}>
-            {loading ? 'Loading...' : 'Login'}
-          </Text>
+          <Text style={styles.loginButtonText}>{loading ? 'Loading...' : 'Login'}</Text>
         </TouchableOpacity>
 
-        {/* Footer Links */}
         <View style={styles.footerLinks}>
           <Text style={styles.footerText}>Don’t have an account?</Text>
           <TouchableOpacity onPress={() => router.push('/Signup')}>

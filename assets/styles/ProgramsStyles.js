@@ -16,6 +16,12 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
   },
+  subtitle: {
+    fontSize: 16,
+    color: '#555',
+    textAlign: 'center',
+    marginBottom: 10,
+  },
   scrollContainer: {
     paddingTop: 60, // Adjust based on your title height to avoid overlap
   },
@@ -48,6 +54,16 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 200,
     borderRadius: 10,
+    marginBottom: 10, // Add spacing after the image
+  },
+  linkContainer: {
+    marginTop: 10, // Spacing between image and link if needed
+  },
+  cardLink: {
+    color: '#1e90ff', // Blue color for hyperlink appearance
+    textDecorationLine: 'underline', // Underline for link appearance
+    fontSize: 16,
+    textAlign: 'left',
   },
   bottomNav: {
     flexDirection: 'row',
