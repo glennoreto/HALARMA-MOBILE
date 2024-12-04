@@ -173,6 +173,7 @@ const Account = () => {
                   { label: 'Staff', value: 'Staff' },
                   { label: 'Student', value: 'Student' },
                 ]}
+                
                 placeholder={{
                   label: 'User Type:',
                   value: null,
@@ -240,7 +241,7 @@ const Account = () => {
                       borderColor: styles.input.borderColor,
                       borderWidth: styles.input.borderWidth,
                       borderRadius: styles.input.borderRadius,
-                      paddingHorizontal: styles.input.paddingHorizontal,
+                      paddingHorizontal: 55,
                       marginBottom: styles.input.marginBottom,
                       backgroundColor: styles.input.backgroundColor,
                       color: '#000',

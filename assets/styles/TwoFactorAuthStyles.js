@@ -11,12 +11,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  backButton: {
+    position: 'absolute',
+    top: 50,
+    left: 20,},
+
   logoContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 150,
-        left: 70,  // 15% of screen height for bottom margin
+    marginBottom: 5,
+        // 15% of screen height for bottom margin
  
       },
   logo: {
@@ -50,7 +55,7 @@ const styles = StyleSheet.create({
   formContainer: {
     width: '100%',
     alignItems: 'center',
-    marginBottom: height * 0.32, // 25% of screen height for bottom margin
+    marginBottom: height * 0.26, // 25% of screen height for bottom margin
   },
   input: {
     height: height * 0.06, // 6% of screen height for input height

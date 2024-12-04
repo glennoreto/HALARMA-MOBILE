@@ -12,8 +12,8 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 66,
-    left: 70, // 15% of screen height for bottom margin
+    marginBottom: 40,
+// 15% of screen height for bottom margin
   },
   logo: {
     width: width * 0.5, // 50% of screen width
@@ -39,7 +39,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 1,
   },
-
   labelTime: {
     fontSize: 16,
     color: '#000',
@@ -47,7 +46,6 @@ const styles = StyleSheet.create({
     marginTop: 20, // Add space above the text
     marginBottom: 1, // Add space below the text
   },
-  
   input: {
     width: '100%',
     height: 50,
@@ -84,8 +82,8 @@ const styles = StyleSheet.create({
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 50,
-  
+    marginTop: height * 0.05, // 5% of screen height
+    marginBottom: height * 0.15, // 5% of screen height
   },
   backButton: {
     backgroundColor: '#800000',
@@ -93,15 +91,6 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     width: '45%',
     alignItems: 'center',
-    marginBottom: 40, // Reduce margin to avoid too much spacing at the bottom
-  },
-  backButton: {
-    backgroundColor: '#800000',
-    paddingVertical: 15,
-    borderRadius: 25,
-    width: '45%',
-    alignItems: 'center',
-    marginBottom: 99,
   },
   nextButton: {
     backgroundColor: '#800000',
@@ -109,13 +98,11 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     width: '45%',
     alignItems: 'center',
-    marginBottom: 99,
   },
   buttonText: {
     color: '#FFF',
     fontSize: 16,
     fontWeight: 'bold',
-   
   },
   modalOverlay: {
     flex: 1,

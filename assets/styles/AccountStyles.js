@@ -40,6 +40,7 @@ const styles = StyleSheet.create({
     color: '#777',
     fontSize: 14,
   },
+  
   cameraIconContainer: {
     position: 'absolute',
     //bottom: 5, 
@@ -82,7 +83,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   input: {
-    height: height * 0.04,
+    height: 55,
     borderColor: '#ccc',
     borderWidth: 1,
     borderRadius: 8,

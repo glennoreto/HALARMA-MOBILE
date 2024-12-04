@@ -1,34 +1,43 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Alert, Image } from 'react-native';
-import { useRouter } from 'expo-router'; // Import useRouter for navigation
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import { supabase } from './lib/supabase';
 import styles from '../assets/styles/ResetPasswordStyles';
 import Icon from 'react-native-vector-icons/Feather';
 
 const ResetPassword = () => {
-  const [enteredOtp, setEnteredOtp] = useState('');
-  const router = useRouter(); // Initialize the router
+  const [otp, setOtp] = useState('');
+  const navigation = useNavigation();
+  const route = useRoute();
+  const { email } = route.params; // Get the user's email from the route
 
-  const handleSubmitPress = async () => {
+  const handleOtpVerification = async () => {
     try {
-      const storedOtp = await AsyncStorage.getItem('generatedOtp');
+      // Verify the OTP via Supabase (only use the first 4 digits of the token)
+      const { data, error } = await supabase.auth.verifyOtp({
+        email,
+        token: otp, // Use the entered 4-digit OTP
+        type: 'recovery', // Ensure it's for password recovery
+      });
 
-      if (enteredOtp === storedOtp) {
-        Alert.alert('OTP Verified', 'You can now reset your password.');
-        router.push('/ResetSubmit'); // Navigate to ResetSubmit screen
-      } else {
-        Alert.alert('Invalid OTP', 'The code you entered is incorrect.');
+      if (error) {
+        Alert.alert('Invalid OTP', 'The OTP you entered is incorrect or expired.');
+        return;
       }
-    } catch (error) {
-      Alert.alert('Error', 'An error occurred while verifying the OTP.');
-      console.error('Error accessing AsyncStorage:', error);
+
+      // If OTP is verified, navigate to ResetSubmit screen
+      Alert.alert('Success', 'OTP verified! Proceed to reset your password.');
+      navigation.navigate('ResetSubmit', { email });
+    } catch (err) {
+      console.error('Error verifying OTP:', err);
+      Alert.alert('Error', 'An error occurred during OTP verification.');
     }
   };
 
   return (
     <View style={styles.container}>
       {/* Back Button */}
-      <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
         <Icon name="arrow-left" size={24} color="#000" />
       </TouchableOpacity>
 
@@ -37,23 +46,24 @@ const ResetPassword = () => {
         <Image source={require('../assets/bell_halarmaS23.png')} style={styles.logo} />
       </View>
 
-      {/* Title and Subtitle */}
-      <Text style={styles.title}>Password Reset</Text>
-      <Text style={styles.subtitle}>A verification code has been sent to your email.</Text>
+      {/* Title */}
+      <Text style={styles.title}>Verify OTP</Text>
+      <Text style={styles.subtitle}>Enter the 6-digit code sent to your email.</Text>
 
-      {/* OTP Input and Submit Button */}
-      <View style={styles.formContainer}>
-        <TextInput
-          style={styles.input}
-          placeholder="Enter Code:"
-          keyboardType="numeric"
-          value={enteredOtp}
-          onChangeText={setEnteredOtp}
-        />
-        <TouchableOpacity style={styles.submitButton} onPress={handleSubmitPress}>
-          <Text style={styles.submitButtonText}>Submit</Text>
-        </TouchableOpacity>
-      </View>
+      {/* OTP Input */}
+      <TextInput
+        style={styles.input}
+        placeholder="Enter OTP"
+        keyboardType="numeric"
+        maxLength={6} // Limit input to 4 digits
+        value={otp}
+        onChangeText={setOtp}
+      />
+
+      {/* Verify Button */}
+      <TouchableOpacity style={styles.submitButton} onPress={handleOtpVerification}>
+        <Text style={styles.submitButtonText}>Verify OTP</Text>
+      </TouchableOpacity>
     </View>
   );
 };

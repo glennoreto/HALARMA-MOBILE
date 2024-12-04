@@ -46,7 +46,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 5,
     paddingHorizontal: 10,
-    marginBottom: 15,
+    marginBottom:26,
     backgroundColor: '#fff',
   },
   submitButton: {
@@ -55,7 +55,7 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     alignItems: 'center',
     width: '100%', // Match the width of the input
-    marginBottom: 40,
+    marginBottom: 280,
   },
   submitButtonText: {
     color: '#fff',

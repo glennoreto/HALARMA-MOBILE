@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Image, Alert } from 'react-native';
 import { useRouter } from 'expo-router'; // Import useRouter for navigation
 import Icon from 'react-native-vector-icons/Feather'; // Back arrow icon
+import { supabase } from './lib/supabase'; // Import your Supabase instance
 import styles from '../assets/styles/ChangePasswordStyles'; // Import the styles
 
 const ChangePassword = () => {
@@ -10,13 +11,44 @@ const ChangePassword = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const router = useRouter(); // Initialize the router
 
-  const handleSave = () => {
-    // Logic to handle password save
-    if (newPassword === confirmPassword) {
+  // Function to handle password change
+  const handleSave = async () => {
+    if (newPassword !== confirmPassword) {
+      return Alert.alert('Error', 'New passwords do not match');
+    }
+
+    try {
+      // Get the current logged-in user's session using getUser
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      
+      if (userError || !user) {
+        return Alert.alert('Error', 'User is not logged in');
+      }
+
+      // Attempt to sign in with the old password to verify it
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: user.email, // Use the logged-in user's email
+        password: oldPassword,
+      });
+
+      if (signInError) {
+        return Alert.alert('Error', 'Old password is incorrect');
+      }
+
+      // If old password is correct, update the password
+      const { error: updateError } = await supabase.auth.updateUser({
+        password: newPassword,
+      });
+
+      if (updateError) {
+        return Alert.alert('Error', 'Failed to change password');
+      }
+
       Alert.alert('Success', 'Password changed successfully');
-      router.back(); // Navigate back after successful save
-    } else {
-      Alert.alert('Error', 'New passwords do not match');
+      router.back(); // Navigate back after successful password change
+    } catch (error) {
+      console.error(error);
+      Alert.alert('Error', 'Something went wrong');
     }
   };
 

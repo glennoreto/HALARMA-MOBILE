@@ -1,11 +1,77 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome5'; // Import FontAwesome5 icons
 import { useRouter } from 'expo-router'; // Import useRouter for navigation
+import { createClient } from '@supabase/supabase-js'; // Import Supabase client
 import styles from '../assets/styles/NotificationStyles'; // Import styles
 
-const Notification = () => {
-  const router = useRouter(); // Initialize the router
+const Notification = () => {  
+  const router = useRouter();
+  const [notifications, setNotifications] = useState([]);
+  const [error, setError] = useState(null);
+
+  // Initialize Supabase client with debug enabled
+  const supabase = createClient('https://bmtrvbxbqdmzfhyotepu.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJtdHJ2YnhicWRtemZoeW90ZXB1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjkyMzU3MDEsImV4cCI6MjA0NDgxMTcwMX0.87VD2EKn3e57F3kd7_dqQiglGIlcqSlfxfoe0UR_Ulo', {
+    debug: true, // Enable debug logs
+  });
+
+  // Fetch notifications from Supabase
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        console.log('Fetching notifications...');
+        const { data, error } = await supabase
+          .from('notifications')
+          .select('*')
+          .order('time', { ascending: false });
+
+        if (error) {
+          setError(error.message);
+          console.error('Error fetching notifications:', error);
+        } else {
+          setNotifications(data);
+        }
+      } catch (err) {
+        setError(err.message);
+        console.error('Network Error:', err);
+      }
+    };
+
+    // Create notifications table if it doesn't exist
+    const createNotificationsTable = async () => {
+      try {
+        // Table schema for notifications
+        const { error } = await supabase.rpc('create_notifications_table');
+        if (error) {
+          console.error('Error creating table:', error);
+        } else {
+          console.log('Notifications table created successfully');
+        }
+      } catch (err) {
+        console.error('Error creating notifications table:', err);
+      }
+    };
+
+    // Create trigger for notifications
+    const createTrigger = async () => {
+      try {
+        const { error } = await supabase.rpc('create_notification_trigger');
+        if (error) {
+          console.error('Error creating trigger:', error);
+        } else {
+          console.log('Trigger created successfully');
+        }
+      } catch (err) {
+        console.error('Error creating trigger:', err);
+      }
+    };
+
+    // Create table and trigger only once
+    createNotificationsTable();
+    createTrigger();
+
+    fetchNotifications();
+  }, []);
 
   return (
     <View style={styles.container}>
@@ -15,72 +81,22 @@ const Notification = () => {
         <View style={styles.separator} />
       </View>
 
+      {/* Error Message */}
+      {error && <Text style={styles.errorMessage}>{error}</Text>}
+
       {/* Notifications List */}
       <ScrollView contentContainerStyle={styles.notificationContainer}>
-        {/* Notification 1 */}
-        <View style={[styles.notificationItem, { backgroundColor: '#e74c3c' }]}>
-          <View style={styles.notificationIconCircle}>
-            <Icon name="bell" size={24} color="#fff" />
+        {notifications.map((notification) => (
+          <View key={notification.id} style={[styles.notificationItem, { backgroundColor: notification.color }]}>
+            <View style={styles.notificationIconCircle}>
+              <Icon name="bell" size={24} color="#fff" />
+            </View>
+            <View style={styles.notificationText}>
+              <Text style={styles.notificationMessage}>{notification.message}</Text>
+              <Text style={styles.notificationTime}>{new Date(notification.time).toLocaleString()}</Text>
+            </View>
           </View>
-          <View style={styles.notificationText}>
-            <Text style={styles.notificationMessage}>
-              Please be informed that Storm Signal No. 2 has been raised in our area...
-            </Text>
-            <Text style={styles.notificationTime}>1 day ago</Text>
-          </View>
-        </View>
-
-        {/* Notification 2 */}
-        <View style={[styles.notificationItem, { backgroundColor: '#f39c12' }]}>
-          <View style={styles.notificationIconCircle}>
-            <Icon name="bell" size={24} color="#fff" />
-          </View>
-          <View style={styles.notificationText}>
-            <Text style={styles.notificationMessage}>
-              Good Day Student! New Announcement posted: With scorching temperatures expected today...
-            </Text>
-            <Text style={styles.notificationTime}>8 hours ago</Text>
-          </View>
-        </View>
-
-        {/* Notification 3 */}
-        <View style={[styles.notificationItem, { backgroundColor: '#f39c12' }]}>
-          <View style={styles.notificationIconCircle}>
-            <Icon name="bell" size={24} color="#fff" />
-          </View>
-          <View style={styles.notificationText}>
-            <Text style={styles.notificationMessage}>
-              Good Day Student! New Announcement posted: Road near the University Gymnasium is under repair...
-            </Text>
-            <Text style={styles.notificationTime}>1 day ago</Text>
-          </View>
-        </View>
-
-        {/* Notification 4 */}
-        <View style={[styles.notificationItem, { backgroundColor: '#f1c40f' }]}>
-          <View style={styles.notificationIconCircle}>
-            <Icon name="bell" size={24} color="#fff" />
-          </View>
-          <View style={styles.notificationText}>
-            <Text style={styles.notificationMessage}>
-              Good Day Student! New Announcement posted: Another goal achieved! MSUIF is now a member of ARISE Philippines!...
-            </Text>
-            <Text style={styles.notificationTime}>1 hour ago</Text>
-          </View>
-        </View>
-
-        {/* Notification 5 */}
-        <View style={[styles.notificationItem, { backgroundColor: '#2ecc71' }]}>
-          <View style={styles.notificationIconCircle}>
-            <Icon name="bell" size={24} color="#fff" />
-          </View>
-          <View style={styles.notificationText}>
-            <Text style={styles.notificationMessage}>
-              Good Day Student! New Announcement posted: The Health and Safety Office in collaboration with the Lucena City...
-            </Text>
-            <Text style={styles.notificationTime}>6 hours ago</Text>
-          </View>
-        </View>
+        ))}
       </ScrollView>
 
       {/* Bottom Navigation */}

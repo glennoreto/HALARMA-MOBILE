@@ -1,36 +1,36 @@
-import { StyleSheet,  Dimensions } from 'react-native';
+import { StyleSheet, Dimensions } from 'react-native';
 const { width, height } = Dimensions.get('window');
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'space-between',
-    backgroundColor: '#E5E5E5', // Light grey background
-    paddingHorizontal: 20,
+    backgroundColor: '#E5E5E5',
+    paddingHorizontal: 25,
     paddingVertical: 30,
   },
   logoContainer: {
-    flex: 1,
-    justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 70,
-    left: 70, // 15% of screen height for bottom margin
+    justifyContent: 'center', // Center vertically in the container
+    marginTop: height * -0.07, // Add 5% of screen height as top margin
+    //marginBottom: height * 0.01, // Add 2% of screen height as bottom margin
   },
   logo: {
     width: width * 0.5, // 50% of screen width
     height: height * 0.2, // 20% of screen height
-    resizeMode: 'contain',
+    resizeMode: 'contain', // Ensure the image scales without distortion
   },
+  
   headerText: {
     fontSize: 22,
     fontWeight: 'bold',
     textAlign: 'center',
     color: '#000',
-    marginBottom: 10,
+    marginBottom: 15,
   },
   subHeaderText: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#800000', // Red color for the "Other Details" heading
+    color: '#800000',
     marginBottom: 20,
   },
   label: {
@@ -42,41 +42,59 @@ const styles = StyleSheet.create({
   textArea: {
     width: '100%',
     height: 100,
-    borderColor: '#800000', // Red border for text area
+    borderColor: '#800000',
     borderWidth: 1,
     borderRadius: 8,
     padding: 10,
     backgroundColor: '#FFF',
-    textAlignVertical: 'top', // Ensure text starts at the top
+    textAlignVertical: 'top',
+    marginBottom: 10,
   },
   exampleText: {
     fontSize: 12,
     color: '#800000',
     marginBottom: 20,
-    marginTop: 5,
   },
   imageUploadContainer: {
-    borderColor: '#800000', // Red border for image container
+    borderColor: '#800000',
     borderWidth: 1,
     borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
-    height: 120,
+    height: 200,
     backgroundColor: '#FFF',
     marginBottom: 20,
   },
-  cameraIcon: {
-    
-    marginBottom: 10,
+  imageButtonsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginBottom: 20,
   },
-  imageUploadText: {
+  imageButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#800000',
+    padding: 10,
+    borderRadius: 8,
+    width: '45%',
+    justifyContent: 'center',
+  },
+  imageButtonText: {
+    color: '#FFF',
     fontSize: 16,
-    color: '#000',
+    fontWeight: 'bold',
+    marginLeft: 5,
+  },
+  uploadedImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 8,
+    resizeMode: 'contain',
   },
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 40,
+    marginTop: 20,
   },
   backButton: {
     backgroundColor: '#800000',
@@ -84,7 +102,6 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     width: '45%',
     alignItems: 'center',
-    marginBottom: 150,
   },
   nextButton: {
     backgroundColor: '#800000',
@@ -92,13 +109,14 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     width: '45%',
     alignItems: 'center',
-    marginBottom: 150,
+    
+    
   },
   buttonText: {
     color: '#FFF',
     fontSize: 16,
     fontWeight: 'bold',
-   
+    
   },
 
 
@@ -136,11 +154,77 @@ const styles = StyleSheet.create({
 
   uploadedImage: {
     width: '100%',
-    height: 200,
-    borderRadius: 10,
+    height: 198,
+    borderRadius: 7,
     resizeMode: 'cover',
-    marginTop: 10,
+    marginTop: 0,
   },
+
+
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    width: '80%',
+    backgroundColor: '#FFF',
+    borderRadius: 10,
+    padding: 20,
+    alignItems: 'center',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 20,
+  },
+  modalButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#007BFF',
+    padding: 10,
+    borderRadius: 5,
+    marginBottom: 10,
+    width: '80%',
+    justifyContent: 'center',
+  },
+  modalButtonText: {
+    color: '#FFF',
+    fontSize: 16,
+    marginLeft: 10,
+  },
+  modalCloseButton: {
+    marginTop: 10,
+    padding: 10,
+    borderRadius: 5,
+    backgroundColor: 'gray',
+    width: '80%',
+    alignItems: 'center',
+  },
+  modalCloseButtonText: {
+    color: '#FFF',
+    fontSize: 16,
+  },
+
+  deleteImageButton: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  backgroundColor: '#FF3333',
+  padding: 10,
+  borderRadius: 5,
+  marginTop: 10,
+  justifyContent: 'center',
+},
+deleteImageButtonText: {
+  color: '#FFF',
+  fontSize: 16,
+  marginLeft: 10,
+},
+scrollContainer: {
+  paddingBottom: 100, // Ensure content doesn't get hidden behind the bottom nav
+},
+
   
 });
 

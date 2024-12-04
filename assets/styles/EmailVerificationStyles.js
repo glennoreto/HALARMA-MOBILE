@@ -20,10 +20,11 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom:  176,
-    left: 70,
+    marginBottom:  10,
+   
       // 18% of screen width to position the logo
   },
+  
   logo: {
     width: width * 0.5, // 50% of screen width
     height: height * 0.2, // 20% of screen height
@@ -50,7 +51,7 @@ const styles = StyleSheet.create({
     marginBottom: height * 0.24, // 15% of screen height for bottom margin
   },
   input: {
-    height: height * 0.05, // 5% of screen height for input height
+    height: height * 0.06, // 5% of screen height for input height
     borderColor: '#000',
     borderWidth: 1,
     marginBottom: height * 0.02, // 2% of screen height for margin bottom

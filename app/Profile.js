@@ -103,7 +103,7 @@ const Profile = () => {
           {/* Header Section */}
           <View style={styles.profileHeader}>
             <Text style={styles.profileName}>{`${userData.firstName} ${userData.middleInitial} ${userData.surname}`}</Text>
-            <TouchableOpacity style={styles.editIcon} onPress={() => navigation.navigate('Account', { userData })}>
+            <TouchableOpacity style={styles.editIcon} onPress={() => navigation.navigate('ProfileEdit', { userData })}>
               <Icon name="edit" size={20} color="#000" />
             </TouchableOpacity>
           </View>

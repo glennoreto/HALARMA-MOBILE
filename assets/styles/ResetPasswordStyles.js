@@ -6,7 +6,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#e5e5e5', // Light grey background
     alignItems: 'center', // Centers the children horizontally
     justifyContent: 'center', // Centers the children vertically
-    paddingHorizontal: 20,
+    paddingHorizontal: 5,
   },
   backButton: {
     position: 'absolute',
@@ -63,7 +63,7 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     alignItems: 'center',
     width: '80%', // Match the width of the inp
-    marginBottom: 40,
+    marginBottom: 260,
   },
   submitButtonText: {
     color: '#fff',

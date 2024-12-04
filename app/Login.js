@@ -6,7 +6,7 @@ import styles from '../assets/styles/LoginStyles';
 import Icon from 'react-native-vector-icons/Feather';
 
 const Login = () => {
-  const router = useRouter();
+  const router = useRouter(); // Use router for navigation
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -16,7 +16,7 @@ const Login = () => {
     try {
       setLoading(true);
 
-      // Check if the email is registered by attempting to sign in with email and password
+      // Check if the email is registered
       const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -27,12 +27,12 @@ const Login = () => {
         return;
       }
 
-      // If user exists, send OTP to the email
+      // Send OTP to the email
       const { error: otpError } = await supabase.auth.signInWithOtp({ email });
       if (otpError) throw otpError;
 
       Alert.alert('OTP Sent', 'Please check your email for the verification code.');
-      router.push({ pathname: '/TwoFactorAuth', params: { email } });
+      router.push({ pathname: '/TwoFactorAuth', params: { email } }); // Navigate with email
     } catch (err) {
       console.error('Error sending OTP:', err);
       Alert.alert('Error', 'Failed to send OTP. Please check your email and try again.');
@@ -41,20 +41,14 @@ const Login = () => {
     }
   };
 
-  const handleLoginPress = async () => {
-    if (loading) return;
-    await handleSendOTP();
-  };
-
-  const handleResetPasswordPress = () => {
-    router.push('/NewPasswordReset');
-  };
-
   return (
     <View style={styles.container}>
-      <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-        <Icon name="arrow-left" size={24} color="#000" />
-      </TouchableOpacity>
+    <TouchableOpacity
+      style={styles.backButton}
+      onPress={() => router.push('/NextScreen')} // Navigate to NextScreen.js
+    >
+      <Icon name="arrow-left" size={24} color="#000" />
+    </TouchableOpacity>
 
       <View style={styles.logoContainer}>
         <Image source={require('../assets/bell_halarmaS23.png')} style={styles.logo} />
@@ -79,7 +73,7 @@ const Login = () => {
           secureTextEntry
         />
 
-        <TouchableOpacity style={styles.loginButton} onPress={handleLoginPress} disabled={loading}>
+        <TouchableOpacity style={styles.loginButton} onPress={handleSendOTP} disabled={loading}>
           <Text style={styles.loginButtonText}>{loading ? 'Loading...' : 'Login'}</Text>
         </TouchableOpacity>
 
@@ -88,7 +82,7 @@ const Login = () => {
           <TouchableOpacity onPress={() => router.push('/Signup')}>
             <Text style={styles.link}>Sign-up</Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={handleResetPasswordPress}>
+          <TouchableOpacity onPress={() => router.push('/NewPasswordReset')}>
             <Text style={styles.link}>Reset Password</Text>
           </TouchableOpacity>
         </View>

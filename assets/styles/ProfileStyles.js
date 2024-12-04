@@ -21,7 +21,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#e0e0e0',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 10,
+    //marginBottom: 10,
     
   },
   profileImage: {
@@ -30,8 +30,8 @@ const styles = StyleSheet.create({
   },
   cameraIconContainer: {
     position: 'absolute',
-    bottom: 30,
-    right: 30,
+    bottom: 70,
+
     backgroundColor: '#fff', // White background for better contrast
     padding: 8,
     borderRadius: 20,
@@ -46,7 +46,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 20,
+   // marginBottom: 20,
     position: 'relative',
   },
   profileName: {
@@ -64,7 +64,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: 8,
     padding: 20,
-    marginBottom: 20,
+  //  marginBottom: 20,
     marginHorizontal: 20,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },

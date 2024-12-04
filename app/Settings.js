@@ -9,28 +9,26 @@ const Settings = () => {
   const router = useRouter(); // Initialize the router
   const [userEmail, setUserEmail] = useState(null);
 
-  // Fetch the current user email when the component mounts
+  // Verify session when the component mounts
   useEffect(() => {
-    const fetchUserData = async () => {
+    const checkSession = async () => {
       const { data: { session }, error } = await supabase.auth.getSession();
-      if (error) {
-        console.error('Error fetching session:', error.message);
-      } else if (session) {
-        setUserEmail(session.user.email); // Set the user email
+      if (error || !session) {
+        // If there's no session or an error, redirect to Login
+        router.replace('/Login');
+      } else {
+        setUserEmail(session.user.email); // Set the user's email
       }
     };
 
-    fetchUserData();
+    checkSession();
   }, []);
 
   const handleLogout = async () => {
     try {
-      if (userEmail) {
-        console.log(`Logging out user: ${userEmail}`); // Log the email to the terminal
-      }
       await supabase.auth.signOut(); // Sign out the user
       Alert.alert('Success', 'You have been logged out.');
-      router.push('/Login'); // Navigate to the Login screen after logout
+      router.replace('/Login'); // Navigate to Login screen after logout
     } catch (error) {
       console.error('Error logging out:', error.message);
       Alert.alert('Error', 'Failed to log out. Please try again.');
