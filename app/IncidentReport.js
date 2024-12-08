@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Image, Modal, TouchableWithoutFeedback, Platform, KeyboardAvoidingView, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
-import styles from '../assets/styles/IncidentReportStyles'; 
-import CalendarPicker from 'react-native-calendar-picker'; 
-import moment from 'moment'; 
-import DateTimePicker from '@react-native-community/datetimepicker'; 
-import Icon from 'react-native-vector-icons/FontAwesome5'; 
-import { Picker } from '@react-native-picker/picker'; 
+import styles from '../assets/styles/IncidentReportStyles';
+import CalendarPicker from 'react-native-calendar-picker';
+import moment from 'moment';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import Icon from 'react-native-vector-icons/FontAwesome5';
+import { Picker } from '@react-native-picker/picker';
+import { supabase } from './supabaseClient'; // Import the supabase client
 
 const IncidentReport = () => {
   const [location, setLocation] = useState('');
@@ -88,6 +89,36 @@ const IncidentReport = () => {
     return a.label.localeCompare(b.label); // Alphabetical sorting
   });
 
+  // Function to submit the incident report
+  const submitIncidentReport = async () => {
+    // Prepare the data
+    const reportData = {
+      location,
+      room,
+      floor,
+      date: selectedStartDate ? moment(selectedStartDate).format('YYYY-MM-DD') : null,
+      time_observed: timeObserved,
+    };
+
+    try {
+      // Insert data into Supabase
+      const { data, error } = await supabase
+        .from('incident')  // Table name in Supabase
+        .insert([reportData]);
+
+      if (error) {
+        console.error('Error submitting incident report:', error);
+        alert('Error submitting incident report');
+      } else {
+        console.log('Incident report submitted:', data);
+        alert('Incident report submitted successfully!');
+      }
+    } catch (error) {
+      console.error('Unexpected error:', error);
+      alert('Unexpected error occurred');
+    }
+  };
+
   return (
     <View style={styles.container}>
       <KeyboardAvoidingView
@@ -148,86 +179,42 @@ const IncidentReport = () => {
           <Text style={styles.label}>Date</Text>
           <TouchableWithoutFeedback onPress={() => setShowCalendar(true)}>
             <View style={styles.dateInputContainer}>
-              <Text style={styles.dateInputText}>
-                {selectedStartDate ? moment(selectedStartDate).format('MM/DD/YYYY') : 'Enter Date'}
-              </Text>
-              <Image
-                source={require('../assets/icons/Calendar.png')}
-                style={styles.calendarIcon}
-              />
+              <Text style={styles.dateInput}>{selectedStartDate ? moment(selectedStartDate).format('MMMM Do YYYY') : 'Select Date'}</Text>
+              <Icon name="calendar" size={20} color="#5C6BC0" />
             </View>
           </TouchableWithoutFeedback>
 
-          {/* Time Picker */}
-          <Text style={styles.labelTime}>Time of Observation</Text>
-          <TouchableWithoutFeedback onPress={() => setShowTimePicker(true)}>
-            <View style={styles.dateInputContainer}>
-              <Text style={styles.dateInputText}>
-                {timeObserved ? timeObserved : 'Enter Time'}
-              </Text>
-              <Image
-                source={require('../assets/icons/Clock-icon.png')}
-                style={styles.calendarIcon}
-              />
-            </View>
-          </TouchableWithoutFeedback>
-
-          {/* Buttons */}
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-              <Text style={styles.buttonText}>Back</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
-              <Text style={styles.buttonText}>Next</Text>
-            </TouchableOpacity>
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-
-      {/* Calendar Modal */}
-      <Modal visible={showCalendar} transparent={true} animationType="fade" onRequestClose={() => setShowCalendar(false)}>
-        <View style={styles.modalBackground}>
-          <View style={styles.modalContainer}>
+          {showCalendar && (
             <CalendarPicker
               onDateChange={handleDateChange}
               selectedStartDate={selectedStartDate}
             />
-            <TouchableOpacity onPress={() => setShowCalendar(false)} style={styles.closeModalButton}>
-              <Text style={styles.buttonText}>Close</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
+          )}
 
-      {/* Time Picker Modal */}
-      {showTimePicker && (
-        <DateTimePicker
-          mode="time"
-          value={new Date()}
-          is24Hour={true}
-          onChange={handleTimeChange}
-        />
-      )}
+          {/* Time Picker */}
+          <Text style={styles.label}>Time of Incident</Text>
+          <TouchableWithoutFeedback onPress={() => setShowTimePicker(true)}>
+            <View style={styles.timeInputContainer}>
+              <Text style={styles.timeInput}>{timeObserved || 'Select Time'}</Text>
+              <Icon name="clock" size={20} color="#5C6BC0" />
+            </View>
+          </TouchableWithoutFeedback>
 
-      {/* Bottom Navigation */}
-      <View style={styles.bottomNav}>
-        <TouchableOpacity style={styles.navItem} onPress={() => router.push('/Homepages')}>
-          <Icon name="home" size={25} color="#333" style={styles.navIcon} />
-          <Text style={styles.navText}>Home</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem} onPress={() => router.push('/Notification')}>
-          <Icon name="bell" size={25} color="#333" style={styles.navIcon} />
-          <Text style={styles.navText}>Notifications</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem} onPress={() => router.push('/History')}>
-          <Icon name="history" size={25} color="#333" style={styles.navIcon} />
-          <Text style={styles.navText}>History</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem} onPress={() => router.push('/Profile')}>
-          <Icon name="user" size={25} color="#333" style={styles.navIcon} />
-          <Text style={styles.navText}>Profile</Text>
-        </TouchableOpacity>
-      </View>
+          {showTimePicker && (
+            <DateTimePicker
+              value={new Date()}
+              mode="time"
+              display="default"
+              onChange={handleTimeChange}
+            />
+          )}
+
+          {/* Submit Button */}
+          <TouchableOpacity style={styles.submitButton} onPress={submitIncidentReport}>
+            <Text style={styles.submitButtonText}>Submit Report</Text>
+          </TouchableOpacity>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </View>
   );
 };

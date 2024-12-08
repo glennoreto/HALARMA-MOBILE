@@ -109,7 +109,7 @@ const Account = () => {
 
   const confirmSubmission = async () => {
     setShowModal(false);
-
+  
     const userData = {
       firstName,
       surname,
@@ -122,19 +122,64 @@ const Account = () => {
       department,
       userType,
       year,
-      image,
+      image, // You'll need to upload the image separately if needed, as Supabase doesn't store images directly in rows
     };
-
+  
     try {
-      console.log('Saving user data:', userData);
-      await AsyncStorage.setItem('userData', JSON.stringify(userData));
-      Alert.alert('Submitted', 'Your information has been submitted.');
-      navigation.navigate('Profile');
+      // If the image is provided, upload the image to Supabase Storage
+      let imageUrl = null;
+      if (image) {
+        const imageName = `user_images/${Date.now()}_${image.split('/').pop()}`;
+        const imageUploadResponse = await supabase.storage
+          .from('profile-images')
+          .upload(imageName, { uri: image }, { contentType: 'image/jpeg' });
+  
+        if (imageUploadResponse.error) {
+          throw new Error(imageUploadResponse.error.message);
+        }
+  
+        // Get the URL of the uploaded image
+        const { publicURL, error: urlError } = supabase.storage
+          .from('profile-images')
+          .getPublicUrl(imageName);
+        if (urlError) {
+          throw new Error(urlError.message);
+        }
+        imageUrl = publicURL; // Image URL to be stored in the database
+      }
+  
+      // Insert data into Supabase
+      const { data, error } = await supabase
+        .from('Accounts') // Ensure this table exists in your Supabase database
+        .insert([
+          {
+            first_name: firstName,
+            surname,
+            middle_initial: middleInitial,
+            sex,
+            birthday: birthday.toLocaleDateString(),
+            phone,
+            email,
+            address,
+            department,
+            user_type: userType,
+            year,
+            image_url: imageUrl, // Store image URL if uploaded
+          },
+        ]);
+  
+      if (error) {
+        throw new Error(error.message);
+      }
+  
+      Alert.alert('Submitted', 'Your information has been submitted successfully.');
+      navigation.navigate('Profile'); // Navigate to Profile or wherever appropriate
     } catch (error) {
       console.error('Error saving user data:', error);
       Alert.alert('Error', 'Failed to save user data');
     }
   };
+  
 
   return (
     <KeyboardAvoidingView
