@@ -9,7 +9,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import { supabase } from './lib/supabaseClient'; // Import your supabase client
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import styles from '../assets/styles/ProfileStyles';
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/FontAwesome5';
@@ -20,39 +20,27 @@ const Profile = () => {
   const navigation = useNavigation();
   const [userData, setUserData] = useState(null);
   const [image, setImage] = useState(null);
-  const [loading, setLoading] = useState(true);
 
-  // Fetch user data from Supabase
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const user = await supabase.auth.getUser();
-        if (user?.data) {
-          const { data, error } = await supabase
-            .from('Accounts')
-            .select('*')
-            .eq('id', user.data.id)
-            .single();
-
-          if (data) {
-            setUserData(data);
-            setImage(data.image_url || null);
-          } else {
-            Alert.alert('Error', 'User not found in the database.');
-          }
+        const data = await AsyncStorage.getItem('userData');
+        if (data) {
+          const parsedData = JSON.parse(data);
+          setUserData(parsedData);
+          setImage(parsedData.image || null);
+        } else {
+          Alert.alert('No Data', 'User data not found.');
         }
       } catch (error) {
-        Alert.alert('Error', 'Failed to load user data from Supabase');
+        Alert.alert('Error', 'Failed to load user data');
         console.error('Error loading user data:', error);
-      } finally {
-        setLoading(false);
       }
     };
 
     fetchUserData();
   }, []);
 
-  // Image picker function
   const pickImage = async () => {
     try {
       const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -73,17 +61,9 @@ const Profile = () => {
         setImage(selectedImage);
 
         // Update the stored userData with the new image
-        const updatedUserData = { ...userData, image_url: selectedImage };
+        const updatedUserData = { ...userData, image: selectedImage };
         setUserData(updatedUserData);
-
-        // Optionally update image URL in Supabase storage (if you want to save the image in Supabase storage)
-        const imageUploadResult = await uploadImageToSupabase(selectedImage);
-        if (imageUploadResult?.url) {
-          updatedUserData.image_url = imageUploadResult.url;
-        }
-
-        // Update user data in Supabase
-        await updateUserData(updatedUserData);
+        await AsyncStorage.setItem('userData', JSON.stringify(updatedUserData));
       }
     } catch (error) {
       console.error('Error picking image:', error);
@@ -91,47 +71,7 @@ const Profile = () => {
     }
   };
 
-  // Upload image to Supabase storage and get the URL
-  const uploadImageToSupabase = async (imageUri) => {
-    try {
-      const response = await fetch(imageUri);
-      const blob = await response.blob();
-      const fileName = `${new Date().getTime()}-${imageUri.split('/').pop()}`;
-      const { data, error } = await supabase.storage
-        .from('avatars')
-        .upload(fileName, blob);
-
-      if (error) {
-        throw new Error('Failed to upload image');
-      }
-
-      const imageUrl = supabase.storage.from('avatars').getPublicUrl(fileName).publicURL;
-      return { url: imageUrl };
-    } catch (error) {
-      console.error('Error uploading image:', error);
-      Alert.alert('Error', 'Failed to upload image.');
-    }
-  };
-
-  // Update user data in Supabase
-  const updateUserData = async (updatedUserData) => {
-    try {
-      const { error } = await supabase
-        .from('Accounts')
-        .upsert([updatedUserData]);
-
-      if (error) {
-        throw new Error('Failed to update user data in Supabase');
-      }
-
-      Alert.alert('Success', 'Profile updated successfully');
-    } catch (error) {
-      Alert.alert('Error', error.message || 'Failed to update user data');
-    }
-  };
-
-  // Loading state before rendering
-  if (loading) {
+  if (!userData) {
     return (
       <View style={styles.container}>
         <Text style={styles.infoText}>Loading user data...</Text>
@@ -140,7 +80,10 @@ const Profile = () => {
   }
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
       <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
         <View style={styles.container}>
           {/* Profile Image Section */}

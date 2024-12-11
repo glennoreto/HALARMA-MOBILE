@@ -4,12 +4,20 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F5F5F5',  // Softer background color for a clean, minimalistic look
-    padding: 20,
+    paddingTop: 60,  // To accommodate the back button at the top
+    paddingHorizontal: 20,
+  },
+  scrollViewContent: {
+    paddingBottom: 20, // Adds padding to the bottom of the ScrollView for better layout
   },
   section: {
-   
-    marginVertical: 40,
-    marginBottom: 10, // Increased spacing between sections for a more open feel
+    marginBottom: 30, // Consistent bottom margin for sections
+  },
+  backButton: {
+    position: 'absolute',
+    top: 30,  // Distance from the top of the screen
+    left: 20,
+    zIndex: 10,  // Ensures the back button stays on top of other elements
   },
   heading: {
     fontSize: 26,  // Slightly larger heading
@@ -21,7 +29,7 @@ const styles = StyleSheet.create({
     fontSize: 20,  // Increased font size for subheadings
     fontWeight: '600',
     color: '#800000',  // Maroon color for subheadings as well
-    // More space between subheading and text
+    marginBottom: 10,  // Space between subheading and text
   },
   paragraph: {
     fontSize: 16,  // Keeping the text size consistent for readability

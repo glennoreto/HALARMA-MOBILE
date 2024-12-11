@@ -43,12 +43,12 @@ const Login = () => {
 
   return (
     <View style={styles.container}>
-    <TouchableOpacity
-      style={styles.backButton}
-      onPress={() => router.push('/NextScreen')} // Navigate to NextScreen.js
-    >
-      <Icon name="arrow-left" size={24} color="#000" />
-    </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.backButton}
+        onPress={() => router.push('/NextScreen')} // Updated to navigate to index.js
+      >
+        <Icon name="arrow-left" size={24} color="#000" />
+      </TouchableOpacity>
 
       <View style={styles.logoContainer}>
         <Image source={require('../assets/bell_halarmaS23.png')} style={styles.logo} />

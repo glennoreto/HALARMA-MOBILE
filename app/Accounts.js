@@ -17,10 +17,15 @@ import {
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { useNavigation } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
+import * as FileSystem from 'expo-file-system'; // For reading image files
 import RNPickerSelect from 'react-native-picker-select';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { createClient } from '@supabase/supabase-js';
 import styles from '../assets/styles/AccountStyles';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
+// Supabase Client
+const supabase = createClient('https://bmtrvbxbqdmzfhyotepu.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJtdHJ2YnhicWRtemZoeW90ZXB1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjkyMzU3MDEsImV4cCI6MjA0NDgxMTcwMX0.87VD2EKn3e57F3kd7_dqQiglGIlcqSlfxfoe0UR_Ulo');
 
 const Account = () => {
   const { width } = Dimensions.get('window');
@@ -41,17 +46,17 @@ const Account = () => {
   const [year, setYear] = useState('');
   const [showModal, setShowModal] = useState(false);
 
-  // Function to handle image picking from the library
+  // Function to handle image picking and uploading
   const pickImage = async () => {
     try {
       const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
       if (!permissionResult.granted) {
-        Alert.alert("Permission to access camera roll is required!");
+        Alert.alert('Permission Denied', 'Permission to access the media library is required!');
         return;
       }
 
-      let result = await ImagePicker.launchImageLibraryAsync({
+      const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
         aspect: [1, 1],
@@ -59,12 +64,72 @@ const Account = () => {
       });
 
       if (!result.canceled && result.assets && result.assets.length > 0) {
-        const selectedImage = result.assets[0].uri;
-        setImage(selectedImage);
+        const selectedImageUri = result.assets[0].uri;
+
+        // Upload the image to Supabase
+        const uploadedImageUrl = await uploadImage(selectedImageUri);
+
+        if (uploadedImageUrl) {
+          setImage(uploadedImageUrl); // Update state with the public URL of the uploaded image
+          Alert.alert('Success', 'Image uploaded successfully!');
+        }
       }
     } catch (error) {
       console.error('Error picking image:', error);
       Alert.alert('Error', 'Failed to pick an image.');
+    }
+  };
+
+  // Function to upload the image to Supabase storage
+  const uploadImage = async (imageUri) => {
+    try {
+      // Step 1: Read the image file as base64
+      const imageData = await FileSystem.readAsStringAsync(imageUri, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+
+      // Step 2: Create a unique file name
+      const fileExtension = imageUri.split('.').pop(); // Get file extension
+      const fileName = `profile_${Date.now()}.${fileExtension}`; // Unique file name
+      const filePath = `Profile/${fileName}`; // Define folder path
+
+      // Step 3: Convert base64 to blob
+      const imageBlob = {
+        uri: `data:image/${fileExtension};base64,${imageData}`, // Base64 data with MIME type
+        type: `image/${fileExtension}`,
+        name: fileName,
+      };
+
+      // Step 4: Upload image to Supabase storage bucket
+      const { data, error } = await supabase.storage
+        .from('IMAGES') // Replace with your bucket name
+        .upload(filePath, imageBlob, {
+          contentType: `image/${fileExtension}`, // Set correct MIME type
+          upsert: true,
+        });
+
+      if (error) {
+        console.error('Error uploading image to Supabase:', error.message);
+        Alert.alert('Error', 'Failed to upload the image.');
+        return null;
+      }
+
+      // Step 5: Get the public URL of the uploaded image
+      const { publicURL, error: urlError } = supabase.storage
+        .from('IMAGES')
+        .getPublicUrl(filePath);
+
+      if (urlError) {
+        console.error('Error fetching public URL:', urlError.message);
+        Alert.alert('Error', 'Failed to retrieve image URL.');
+        return null;
+      }
+
+      return publicURL; // Return the public URL
+    } catch (error) {
+      console.error('Error uploading image:', error.message);
+      Alert.alert('Error', 'An error occurred while uploading the image.');
+      return null;
     }
   };
 
@@ -109,7 +174,7 @@ const Account = () => {
 
   const confirmSubmission = async () => {
     setShowModal(false);
-  
+
     const userData = {
       firstName,
       surname,
@@ -122,64 +187,19 @@ const Account = () => {
       department,
       userType,
       year,
-      image, // You'll need to upload the image separately if needed, as Supabase doesn't store images directly in rows
+      image,
     };
-  
+
     try {
-      // If the image is provided, upload the image to Supabase Storage
-      let imageUrl = null;
-      if (image) {
-        const imageName = `user_images/${Date.now()}_${image.split('/').pop()}`;
-        const imageUploadResponse = await supabase.storage
-          .from('profile-images')
-          .upload(imageName, { uri: image }, { contentType: 'image/jpeg' });
-  
-        if (imageUploadResponse.error) {
-          throw new Error(imageUploadResponse.error.message);
-        }
-  
-        // Get the URL of the uploaded image
-        const { publicURL, error: urlError } = supabase.storage
-          .from('profile-images')
-          .getPublicUrl(imageName);
-        if (urlError) {
-          throw new Error(urlError.message);
-        }
-        imageUrl = publicURL; // Image URL to be stored in the database
-      }
-  
-      // Insert data into Supabase
-      const { data, error } = await supabase
-        .from('Accounts') // Ensure this table exists in your Supabase database
-        .insert([
-          {
-            first_name: firstName,
-            surname,
-            middle_initial: middleInitial,
-            sex,
-            birthday: birthday.toLocaleDateString(),
-            phone,
-            email,
-            address,
-            department,
-            user_type: userType,
-            year,
-            image_url: imageUrl, // Store image URL if uploaded
-          },
-        ]);
-  
-      if (error) {
-        throw new Error(error.message);
-      }
-  
-      Alert.alert('Submitted', 'Your information has been submitted successfully.');
-      navigation.navigate('Profile'); // Navigate to Profile or wherever appropriate
+      console.log('Saving user data:', userData);
+      await AsyncStorage.setItem('userData', JSON.stringify(userData));
+      Alert.alert('Submitted', 'Your information has been submitted.');
+      navigation.navigate('Profile');
     } catch (error) {
       console.error('Error saving user data:', error);
       Alert.alert('Error', 'Failed to save user data');
     }
   };
-  
 
   return (
     <KeyboardAvoidingView
@@ -208,43 +228,20 @@ const Account = () => {
 
             <View style={styles.divider} />
 
+            {/* Personal Information Fields */}
             <View style={styles.formContainer}>
               <Text style={styles.sectionTitle}>Personal Information</Text>
- {/* User Type Dropdown */}
- <RNPickerSelect
+              <RNPickerSelect
                 onValueChange={(value) => setUserType(value)}
                 items={[
                   { label: 'Faculty', value: 'Faculty' },
                   { label: 'Staff', value: 'Staff' },
                   { label: 'Student', value: 'Student' },
                 ]}
-                
                 placeholder={{
                   label: 'User Type:',
                   value: null,
                   color: '#9EA0A4',
-                }}
-                style={{
-                  inputAndroid: {
-                    height: styles.input.height,
-                    borderColor: styles.input.borderColor,
-                    borderWidth: styles.input.borderWidth,
-                    borderRadius: styles.input.borderRadius,
-                    paddingHorizontal: styles.input.paddingHorizontal,
-                    marginBottom: styles.input.marginBottom,
-                    backgroundColor: styles.input.backgroundColor,
-                    color: '#000',
-                  },
-                  inputIOS: {
-                    height: styles.input.height,
-                    borderColor: styles.input.borderColor,
-                    borderWidth: styles.input.borderWidth,
-                    borderRadius: styles.input.borderRadius,
-                    paddingHorizontal: styles.input.paddingHorizontal,
-                    marginBottom: styles.input.marginBottom,
-                    backgroundColor: styles.input.backgroundColor,
-                    color: '#000',
-                  },
                 }}
                 value={userType}
               />
@@ -268,8 +265,7 @@ const Account = () => {
                   value={middleInitial}
                   onChangeText={setMiddleInitial}
                 />
-
-                <RNPickerSelect
+                          <RNPickerSelect
                   onValueChange={(value) => setSex(value)}
                   items={[
                     { label: 'Female', value: 'Female' },
@@ -305,6 +301,7 @@ const Account = () => {
                   value={sex}
                 />
               </View>
+              
 
               <TouchableOpacity onPress={() => setShowDatePicker(true)} activeOpacity={0.7}>
                 <TextInput
@@ -312,7 +309,6 @@ const Account = () => {
                   placeholder="Birthday:"
                   value={birthday.toLocaleDateString()}
                   editable={false}
-                  pointerEvents="none"
                 />
               </TouchableOpacity>
               {showDatePicker && (
@@ -324,6 +320,7 @@ const Account = () => {
                 />
               )}
 
+              {/* Contact Information */}
               <Text style={styles.sectionTitle}>Contact Information</Text>
               <TextInput
                 style={styles.input}
@@ -365,48 +362,13 @@ const Account = () => {
                   value: null,
                   color: '#9EA0A4',
                 }}
-                style={{
-                  inputAndroid: {
-                    height: styles.input.height,
-                    borderColor: styles.input.borderColor,
-                    borderWidth: styles.input.borderWidth,
-                    borderRadius: styles.input.borderRadius,
-                    paddingHorizontal: styles.input.paddingHorizontal,
-                    marginBottom: styles.input.marginBottom,
-                    backgroundColor: styles.input.backgroundColor,
-                    color: '#000',
-                  },
-                  inputIOS: {
-                    height: styles.input.height,
-                    borderColor: styles.input.borderColor,
-                    borderWidth: styles.input.borderWidth,
-                    borderRadius: styles.input.borderRadius,
-                    paddingHorizontal: styles.input.paddingHorizontal,
-                    marginBottom: styles.input.marginBottom,
-                    backgroundColor: styles.input.backgroundColor,
-                    color: '#000',
-                  },
-                }}
                 value={department}
               />
 
-              {/* Conditional "Select Year" Dropdown */}
               {userType === 'Student' && (
                 <RNPickerSelect
                   onValueChange={(value) => setYear(value)}
                   items={[
-                    { label: 'Grade 1', value: 'Grade 1' },
-                    { label: 'Grade 2', value: 'Grade 2' },
-                    { label: 'Grade 3', value: 'Grade 3' },
-                    { label: 'Grade 4', value: 'Grade 4' },
-                    { label: 'Grade 5', value: 'Grade 5' },
-                    { label: 'Grade 6', value: 'Grade 6' },
-                    { label: 'Grade 7', value: 'Grade 7' },
-                    { label: 'Grade 8', value: 'Grade 8' },
-                    { label: 'Grade 9', value: 'Grade 9' },
-                    { label: 'Grade 10', value: 'Grade 10' },
-                    { label: 'Grade 11', value: 'Grade 11' },
-                    { label: 'Grade 12', value: 'Grade 12' },
                     { label: 'First Year', value: 'First Year' },
                     { label: 'Second Year', value: 'Second Year' },
                     { label: 'Third Year', value: 'Third Year' },
@@ -417,28 +379,6 @@ const Account = () => {
                     value: null,
                     color: '#9EA0A4',
                   }}
-                  style={{
-                    inputAndroid: {
-                      height: styles.input.height,
-                      borderColor: styles.input.borderColor,
-                      borderWidth: styles.input.borderWidth,
-                      borderRadius: styles.input.borderRadius,
-                      paddingHorizontal: styles.input.paddingHorizontal,
-                      marginBottom: styles.input.marginBottom,
-                      backgroundColor: styles.input.backgroundColor,
-                      color: '#000',
-                    },
-                    inputIOS: {
-                      height: styles.input.height,
-                      borderColor: styles.input.borderColor,
-                      borderWidth: styles.input.borderWidth,
-                      borderRadius: styles.input.borderRadius,
-                      paddingHorizontal: styles.input.paddingHorizontal,
-                      marginBottom: styles.input.marginBottom,
-                      backgroundColor: styles.input.backgroundColor,
-                      color: '#000',
-                    },
-                  }}
                   value={year}
                 />
               )}
@@ -448,6 +388,7 @@ const Account = () => {
               </TouchableOpacity>
             </View>
 
+            {/* Confirmation Modal */}
             <Modal
               animationType="slide"
               transparent={true}
@@ -457,15 +398,21 @@ const Account = () => {
               <View style={styles.modalOverlay}>
                 <View style={styles.modalCard}>
                   <Text style={styles.modalTitle}>Confirmation</Text>
-                  <Text style={styles.modalText}>
-                    By submitting this form, you confirm that all the information provided is accurate and true to the best of your knowledge.
+                  <Text>
+                    By submitting, you confirm all provided information is accurate.
                   </Text>
                   <View style={styles.modalButtonContainer}>
-                    <TouchableOpacity style={[styles.modalButton, styles.cancelButton]} onPress={() => setShowModal(false)}>
-                      <Text style={styles.modalButtonText}>Cancel</Text>
+                    <TouchableOpacity
+                      style={[styles.modalButton, styles.cancelButton]}
+                      onPress={() => setShowModal(false)}
+                    >
+                      <Text>Cancel</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={[styles.modalButton, styles.confirmButton]} onPress={confirmSubmission}>
-                      <Text style={styles.modalButtonText}>Confirm</Text>
+                    <TouchableOpacity
+                      style={[styles.modalButton, styles.confirmButton]}
+                      onPress={confirmSubmission}
+                    >
+                      <Text>Confirm</Text>
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -479,5 +426,3 @@ const Account = () => {
 };
 
 export default Account;
-
-//

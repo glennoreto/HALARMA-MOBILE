@@ -52,7 +52,7 @@ const Announcements = () => {
                   {announcement.created_at ? new Date(announcement.created_at).toLocaleString() : 'Unknown time'}
                 </Text>
                 <Text style={styles.announcementTitle}>{announcement.title}</Text>
-                <Text style={styles.announcementText}>{announcement.description}</Text>
+                <Text style={styles.announcementText}>{announcement.content}</Text>
                 {announcement.image && (
                   <Image source={{ uri: announcement.image }} style={styles.announcementImage} />
                 )}

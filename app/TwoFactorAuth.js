@@ -89,10 +89,10 @@ const TwoFactorAuth = () => {
       <View style={styles.logoContainer}>
         <Image source={require('../assets/bell_halarmaS23.png')} style={styles.logo} />
       </View>
-
-      <Text style={styles.title}>EMAIL VERIFICATION</Text>
+      <Text style={styles.title}>LOGIN</Text>
+      <Text style={styles.subtitle}>2 FACTORS AUTHENTICATION</Text>
       <Text style={styles.subtitle}>
-        We sent a confirmation code to the email address you provided: {email}
+      Please enter the code we sent yo your email address you provided: {email}
       </Text>
 
       <View style={styles.formContainer}>

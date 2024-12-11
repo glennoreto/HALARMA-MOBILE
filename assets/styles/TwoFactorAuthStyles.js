@@ -36,13 +36,13 @@ const styles = StyleSheet.create({
       fontSize: width * 0.08, // 8% of screen width for font size
       fontWeight: 'bold',
       color: 'black',
-      marginBottom: height * 0.02,// 2% of screen height for bottom margin
+      marginBottom: height * 0.05,// 2% of screen height for bottom margin
   },
   subtitle: {
     fontSize: width * 0.04, // 4% of screen width for font size
     color: '#8B0000',
     textAlign: 'center',
-    marginBottom: height * 0.02, // 2% of screen height for bottom margin
+    marginBottom: height * 0.04, // 2% of screen height for bottom margin
     fontWeight: '600',
   },
   instructions: {
@@ -55,7 +55,7 @@ const styles = StyleSheet.create({
   formContainer: {
     width: '100%',
     alignItems: 'center',
-    marginBottom: height * 0.26, // 25% of screen height for bottom margin
+    marginBottom: height * 0.22, // 25% of screen height for bottom margin
   },
   input: {
     height: height * 0.06, // 6% of screen height for input height

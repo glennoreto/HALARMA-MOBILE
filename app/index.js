@@ -61,22 +61,7 @@ const FirstPage = () => {
   }, [pulseAnim]);
 
   // Example Supabase fetch effect
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        let { data, error } = await supabase.from('your_table_name').select('*');
-        if (error) {
-          console.error('Error fetching data from Supabase:', error);
-        } else {
-          console.log('Data fetched from Supabase:', data);
-        }
-      } catch (error) {
-        console.error('Supabase connection error:', error);
-      }
-    };
 
-    fetchData();
-  }, []); // Runs once when the component mounts
 
   return (
     <View style={styles.container}>
@@ -109,7 +94,7 @@ const FirstPage = () => {
         {/* Button with border pulse animation */}
         <View style={buttonStyles.buttonContainer}>
           <Animated.View style={[buttonStyles.pulseBorder, { transform: [{ scale: pulseAnim }] }]}>
-            <TouchableOpacity style={buttonStyles.button} onPress={() => router.push('/NextScreen')}>
+            <TouchableOpacity style={buttonStyles.button} onPress={() => router.push('/Login')}>
               <Text style={buttonStyles.buttonText}>START HERE</Text>
             </TouchableOpacity>
           </Animated.View>

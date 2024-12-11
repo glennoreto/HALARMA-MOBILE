@@ -58,7 +58,7 @@ const Programs = () => {
               <Text style={styles.cardTime}>
                 {program.created_at ? new Date(program.created_at).toLocaleString() : 'Unknown time'}
               </Text>
-              <Text style={styles.cardDescription}>{program.description}</Text>
+              <Text style={styles.cardDescription}>{program.what}</Text>
               {program.image && (
                 <Image source={{ uri: program.image }} style={styles.cardImage} />
               )}

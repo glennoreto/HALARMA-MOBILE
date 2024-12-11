@@ -12,7 +12,7 @@ const NextScreen = () => {
       {/* Back Button with Icon */}
       <TouchableOpacity
         style={styles.backButton}
-        onPress={() => router.back()} // Navigate to the previous screen
+        onPress={() => router.push('/')} // Navigate to index.js (home)
       >
         <Ionicons name="arrow-back" size={24} color="#000" />
       </TouchableOpacity>
